@@ -33,8 +33,6 @@ def main():
     agent = agent_class(config)
     agent.run()
 
-    agent.save_model()
-
 
 if __name__ == '__main__':
     main()

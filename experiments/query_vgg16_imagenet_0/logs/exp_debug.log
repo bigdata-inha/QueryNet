@@ -41,3 +41,24 @@
 [INFO] - 2020-04-18 22:19:15,388 - Agent - : Validation results at epoch-8 | loss: 0.5258898745861745	Top1 Acc: 0.8232323233527367 in C:\Users\jyh23\Documents\Python\QueryNet\agents\vgg.py:493
 [INFO] - 2020-04-18 22:21:58,250 - Agent - : Training at epoch-9 | loss: 0.5355475626823456	Top1 Acc: 0.8220524017467249 in C:\Users\jyh23\Documents\Python\QueryNet\agents\vgg.py:450
 [INFO] - 2020-04-18 22:22:04,883 - Agent - : Validation results at epoch-9 | loss: 0.5099738104449164	Top1 Acc: 0.8343434345842612 in C:\Users\jyh23\Documents\Python\QueryNet\agents\vgg.py:493
+[INFO] - 2020-04-18 22:24:48,358 - Agent - : Training at epoch-10 | loss: 0.503686987519181	Top1 Acc: 0.831353711790393 in C:\Users\jyh23\Documents\Python\QueryNet\agents\vgg.py:450
+[INFO] - 2020-04-18 22:24:54,982 - Agent - : Validation results at epoch-10 | loss: 0.5223825935634875	Top1 Acc: 0.8358585860994127 in C:\Users\jyh23\Documents\Python\QueryNet\agents\vgg.py:493
+[INFO] - 2020-04-18 22:27:38,361 - Agent - : Training at epoch-11 | loss: 0.48306086984093627	Top1 Acc: 0.8349344978165939 in C:\Users\jyh23\Documents\Python\QueryNet\agents\vgg.py:450
+[INFO] - 2020-04-18 22:27:44,855 - Agent - : Validation results at epoch-11 | loss: 0.5365335067674037	Top1 Acc: 0.8318181818181818 in C:\Users\jyh23\Documents\Python\QueryNet\agents\vgg.py:493
+[INFO] - 2020-04-18 22:30:27,692 - Agent - : Training at epoch-12 | loss: 0.45713255531544794	Top1 Acc: 0.8463755458515284 in C:\Users\jyh23\Documents\Python\QueryNet\agents\vgg.py:450
+[INFO] - 2020-04-18 22:30:34,389 - Agent - : Validation results at epoch-12 | loss: 0.5071718821362141	Top1 Acc: 0.8348484848484848 in C:\Users\jyh23\Documents\Python\QueryNet\agents\vgg.py:493
+[INFO] - 2020-04-18 22:33:18,452 - Agent - : Training at epoch-13 | loss: 0.44623630141121384	Top1 Acc: 0.8497379912663755 in C:\Users\jyh23\Documents\Python\QueryNet\agents\vgg.py:450
+[INFO] - 2020-04-18 22:33:24,956 - Agent - : Validation results at epoch-13 | loss: 0.4834780664814095	Top1 Acc: 0.8318181818181818 in C:\Users\jyh23\Documents\Python\QueryNet\agents\vgg.py:493
+[INFO] - 2020-04-18 22:36:07,404 - Agent - : Training at epoch-14 | loss: 0.4272796977623548	Top1 Acc: 0.8557205240174672 in C:\Users\jyh23\Documents\Python\QueryNet\agents\vgg.py:450
+[INFO] - 2020-04-18 22:36:13,901 - Agent - : Validation results at epoch-14 | loss: 0.5269024777075937	Top1 Acc: 0.8262626262626263 in C:\Users\jyh23\Documents\Python\QueryNet\agents\vgg.py:493
+[INFO] - 2020-04-18 22:38:57,785 - Agent - : Training at epoch-15 | loss: 0.4244841359680591	Top1 Acc: 0.854585152838428 in C:\Users\jyh23\Documents\Python\QueryNet\agents\vgg.py:450
+[INFO] - 2020-04-18 22:39:04,331 - Agent - : Validation results at epoch-15 | loss: 0.50246729990167	Top1 Acc: 0.8308080809284942 in C:\Users\jyh23\Documents\Python\QueryNet\agents\vgg.py:493
+[INFO] - 2020-04-18 22:41:46,349 - Agent - : Training at epoch-16 | loss: 0.40978388981529457	Top1 Acc: 0.8593013100436682 in C:\Users\jyh23\Documents\Python\QueryNet\agents\vgg.py:450
+[INFO] - 2020-04-18 22:41:52,829 - Agent - : Validation results at epoch-16 | loss: 0.4823158159852028	Top1 Acc: 0.8469696969696969 in C:\Users\jyh23\Documents\Python\QueryNet\agents\vgg.py:493
+[INFO] - 2020-04-18 22:44:35,890 - Agent - : Training at epoch-17 | loss: 0.3848929667543599	Top1 Acc: 0.8704366812227075 in C:\Users\jyh23\Documents\Python\QueryNet\agents\vgg.py:450
+[INFO] - 2020-04-18 22:44:42,598 - Agent - : Validation results at epoch-17 | loss: 0.5452639983306008	Top1 Acc: 0.8282828285236551 in C:\Users\jyh23\Documents\Python\QueryNet\agents\vgg.py:493
+[INFO] - 2020-04-18 22:47:26,796 - Agent - : Training at epoch-18 | loss: 0.37665382905878836	Top1 Acc: 0.87117903930131 in C:\Users\jyh23\Documents\Python\QueryNet\agents\vgg.py:450
+[INFO] - 2020-04-18 22:47:33,217 - Agent - : Validation results at epoch-18 | loss: 0.4838087056433001	Top1 Acc: 0.8459595960800094 in C:\Users\jyh23\Documents\Python\QueryNet\agents\vgg.py:493
+[INFO] - 2020-04-18 22:50:15,550 - Agent - : Training at epoch-19 | loss: 0.3654331060116018	Top1 Acc: 0.8778165938864629 in C:\Users\jyh23\Documents\Python\QueryNet\agents\vgg.py:450
+[INFO] - 2020-04-18 22:50:22,164 - Agent - : Validation results at epoch-19 | loss: 0.4954080823208055	Top1 Acc: 0.8414141414141414 in C:\Users\jyh23\Documents\Python\QueryNet\agents\vgg.py:493
+[INFO] - 2020-04-18 22:50:22,210 - Timer - :    [-] train : 3640.38755 sec, which is 60.67313 min, which is 1.01122 hour in C:\Users\jyh23\Documents\Python\QueryNet\utils\misc.py:15
