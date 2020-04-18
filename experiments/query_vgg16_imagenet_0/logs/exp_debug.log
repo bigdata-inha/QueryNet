@@ -1,0 +1,27 @@
+[INFO] - 2020-04-18 21:19:02,648 - root - : Hi, This is root. in C:\Users\jyh23\Documents\Python\QueryNet\utils\config.py:95
+[INFO] - 2020-04-18 21:19:02,648 - root - : After the configurations are successfully processed and dirs are created. in C:\Users\jyh23\Documents\Python\QueryNet\utils\config.py:96
+[INFO] - 2020-04-18 21:19:02,649 - root - : The pipeline of the project will begin now. in C:\Users\jyh23\Documents\Python\QueryNet\utils\config.py:97
+[INFO] - 2020-04-18 21:25:52,102 - root - : Hi, This is root. in C:\Users\jyh23\Documents\Python\QueryNet\utils\config.py:95
+[INFO] - 2020-04-18 21:25:52,102 - root - : After the configurations are successfully processed and dirs are created. in C:\Users\jyh23\Documents\Python\QueryNet\utils\config.py:96
+[INFO] - 2020-04-18 21:25:52,102 - root - : The pipeline of the project will begin now. in C:\Users\jyh23\Documents\Python\QueryNet\utils\config.py:97
+[INFO] - 2020-04-18 21:42:53,344 - root - : Hi, This is root. in C:\Users\jyh23\Documents\Python\QueryNet\utils\config.py:95
+[INFO] - 2020-04-18 21:42:53,345 - root - : After the configurations are successfully processed and dirs are created. in C:\Users\jyh23\Documents\Python\QueryNet\utils\config.py:96
+[INFO] - 2020-04-18 21:42:53,345 - root - : The pipeline of the project will begin now. in C:\Users\jyh23\Documents\Python\QueryNet\utils\config.py:97
+[INFO] - 2020-04-18 21:42:53,482 - Agent - : Program will run on *****GPU-CUDA*****
+ in C:\Users\jyh23\Documents\Python\QueryNet\agents\vgg.py:41
+[INFO] - 2020-04-18 21:42:53,482 - Cuda Statistics - : __Python VERSION:  3.7.5 (default, Oct 31 2019, 15:18:51) [MSC v.1916 64 bit (AMD64)] in C:\Users\jyh23\Documents\Python\QueryNet\utils\misc.py:26
+[INFO] - 2020-04-18 21:42:53,484 - Cuda Statistics - : __pyTorch VERSION:  1.2.0 in C:\Users\jyh23\Documents\Python\QueryNet\utils\misc.py:27
+[INFO] - 2020-04-18 21:42:53,484 - Cuda Statistics - : __CUDA VERSION in C:\Users\jyh23\Documents\Python\QueryNet\utils\misc.py:28
+[INFO] - 2020-04-18 21:42:53,696 - Cuda Statistics - : __CUDNN VERSION:  7401 in C:\Users\jyh23\Documents\Python\QueryNet\utils\misc.py:30
+[INFO] - 2020-04-18 21:42:53,697 - Cuda Statistics - : __Number CUDA Devices:  1 in C:\Users\jyh23\Documents\Python\QueryNet\utils\misc.py:31
+[INFO] - 2020-04-18 21:42:53,698 - Cuda Statistics - : __Devices in C:\Users\jyh23\Documents\Python\QueryNet\utils\misc.py:32
+[INFO] - 2020-04-18 21:42:53,744 - Cuda Statistics - : Active CUDA Device: GPU 0 in C:\Users\jyh23\Documents\Python\QueryNet\utils\misc.py:35
+[INFO] - 2020-04-18 21:42:53,744 - Cuda Statistics - : Available devices  1 in C:\Users\jyh23\Documents\Python\QueryNet\utils\misc.py:36
+[INFO] - 2020-04-18 21:42:53,744 - Cuda Statistics - : Current cuda device  0 in C:\Users\jyh23\Documents\Python\QueryNet\utils\misc.py:37
+[INFO] - 2020-04-18 21:42:53,745 - ImagenetDataLoader - : Loading DATA..... in C:\Users\jyh23\Documents\Python\QueryNet\datasets\imagenet.py:23
+[INFO] - 2020-04-18 21:43:38,495 - ImagenetDataLoader - : Loading DATA..... in C:\Users\jyh23\Documents\Python\QueryNet\datasets\imagenet.py:61
+[INFO] - 2020-04-18 21:49:41,823 - Timer - :    [-] compress : 353.17433 sec, which is 5.88624 min, which is 0.09810 hour in C:\Users\jyh23\Documents\Python\QueryNet\utils\misc.py:15
+[INFO] - 2020-04-18 21:56:00,838 - Agent - : Training at epoch-0 | loss: 1.6999867203432089	Top1 Acc: 0.44109170305676854 in C:\Users\jyh23\Documents\Python\QueryNet\agents\vgg.py:450
+[INFO] - 2020-04-18 21:56:31,090 - Agent - : Validation results at epoch-0 | loss: 1.2596092457252164	Top1 Acc: 0.5540404042812309 in C:\Users\jyh23\Documents\Python\QueryNet\agents\vgg.py:493
+[INFO] - 2020-04-18 21:59:17,108 - Agent - : Training at epoch-1 | loss: 1.1920313215372282	Top1 Acc: 0.5791266375545852 in C:\Users\jyh23\Documents\Python\QueryNet\agents\vgg.py:450
+[INFO] - 2020-04-18 21:59:23,639 - Agent - : Validation results at epoch-1 | loss: 0.8459818094007431	Top1 Acc: 0.693939393939394 in C:\Users\jyh23\Documents\Python\QueryNet\agents\vgg.py:493
