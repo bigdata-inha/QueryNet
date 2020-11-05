@@ -8,10 +8,10 @@ import torchvision.transforms as transforms
 from dataloaders.base import BaseLoader
 
 
-class Cifar10Loader(BaseLoader):
+class Cifar100Loader(BaseLoader):
     def __init__(self, batch_size=128):
-        super(Cifar10Loader, self).__init__()
-        mean, std = (0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)
+        super(Cifar100Loader, self).__init__()
+        mean, std = (0.5071, 0.4867, 0.4408), (0.2675, 0.2565, 0.2761)
         self.train_transform = transforms.Compose([
             transforms.RandomCrop(32, padding=4),
             transforms.RandomHorizontalFlip(),
@@ -33,8 +33,8 @@ class Cifar10Loader(BaseLoader):
     def set_default_loader(self, batch_size=None):
         self.batch_size = self.batch_size if batch_size is None else batch_size
 
-        self.train_set = datasets.CIFAR10("./data", train=True, transform=self.train_transform, download=True)
-        self.valid_set = datasets.CIFAR10("./data", train=False, transform=self.valid_transform)
+        self.train_set = datasets.CIFAR100("./data", train=True, transform=self.train_transform, download=True)
+        self.valid_set = datasets.CIFAR100("./data", train=False, transform=self.valid_transform)
 
         self.train_loader = torch.utils.data.DataLoader(self.train_set, batch_size=self.batch_size, shuffle=True)
         self.valid_loader = torch.utils.data.DataLoader(self.valid_set, batch_size=self.batch_size, shuffle=False)

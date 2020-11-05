@@ -31,11 +31,10 @@ class ImageNetLoader(BaseLoader):
             transforms.ToTensor(),
             transforms.Normalize(mean, std)])
 
-        self.make_original_set(batch_size)
-
+        self.set_default_loader(batch_size)
         self.batch_size = batch_size
 
-    def make_original_set(self, batch_size=None):
+    def set_default_loader(self, batch_size=None):
         self.batch_size = self.batch_size if batch_size is None else batch_size
 
         self.train_set = datasets.ImageFolder(os.path.join(self.root, "train"), transform=self.train_transform)
@@ -47,7 +46,7 @@ class ImageNetLoader(BaseLoader):
         self.train_iterations = len(self.train_loader)
         self.valid_iterations = len(self.valid_loader)
 
-    def make_one_class_set(self, sub_class, batch_size=None):
+    def set_one_class_loader(self, sub_class, batch_size=None):
         assert isinstance(sub_class, int)
         self.batch_size = self.batch_size if batch_size is None else batch_size
 
@@ -69,7 +68,7 @@ class ImageNetLoader(BaseLoader):
         self.sub_train_loader = torch.utils.data.DataLoader(self.sub_train_set, batch_size=self.batch_size, shuffle=True)
         self.sub_train_iterations = len(self.sub_train_loader)
 
-    def make_subclass_set(self, sub_classes, batch_size=None):
+    def set_subclass_loader(self, sub_classes, batch_size=None):
         assert isinstance(sub_classes, Iterable)
         self.batch_size = self.batch_size if batch_size is None else batch_size
 
@@ -108,16 +107,33 @@ class ImageNetLoader(BaseLoader):
         self.sub_train_set.targets = new_targets
 
         # sub valid set: use all data, but change others to label 0
+        # new_samples, new_targets = [], []
+        # for i, (sample, target) in enumerate(zip(self.valid_set.samples, self.valid_set.targets)):
+        #     if target in sub_classes:
+        #         new_label = idx_to_new_idx[target]
+        #         new_samples.append((sample[0], new_label))
+        #         new_targets.append(new_label)
+        #     else:
+        #         new_label = 0
+        #         new_samples.append((sample[0], new_label))
+        #         new_targets.append(new_label)
+
+        # half of sub classes, half of the others
+        dic_class_cnt = Counter(self.valid_set.targets)
         new_samples, new_targets = [], []
-        for i, (sample, target) in enumerate(zip(self.valid_set.samples, self.valid_set.targets)):
+        idx = 0
+        while idx < len(self.valid_set.targets):
+            target = self.valid_set.targets[idx]
             if target in sub_classes:
-                new_label = idx_to_new_idx[target]
-                new_samples.append((sample[0], new_label))
-                new_targets.append(new_label)
+                n_samples_per_class = 50
+                new_samples.extend(self.valid_set.samples[idx:idx + n_samples_per_class])
+                new_targets.extend(self.valid_set.targets[idx:idx + n_samples_per_class])
             else:
-                new_label = 0
-                new_samples.append((sample[0], new_label))
-                new_targets.append(new_label)
+                n_samples_per_class = 1
+                new_samples.extend(self.valid_set.samples[idx:idx + n_samples_per_class])
+                new_targets.extend(self.valid_set.targets[idx:idx + n_samples_per_class])
+            idx += dic_class_cnt[target]
+
 
         self.sub_valid_set = copy.deepcopy(self.valid_set)
         self.sub_valid_set.samples = self.sub_valid_set.imgs = new_samples

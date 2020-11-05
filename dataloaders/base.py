@@ -14,11 +14,5 @@ class BaseLoader:
         self.train_iterations = None
         self.valid_iterations = None
 
-        self.sub_train_set = None
-        self.sub_valid_set = None
-
-        self.sub_train_loader = None
-        self.sub_valid_loader = None
-
-        self.sub_train_iterations = None
-        self.sub_valid_iterations = None
+    def set_default(self):
+        pass

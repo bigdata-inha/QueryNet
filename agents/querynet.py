@@ -1,52 +1,46 @@
 import time
 import random
 import pickle
-import torch
+import torch.backends as backends
 import torch.nn as nn
 import torch.optim as optim
 import torchvision.models as models
-import torchvision.utils as vutils
 
 from agents.base import BaseAgent
 from dataloaders import *
 from prune.channel import *
 
 SEED = 42
-random.seed(SEED)
 
 
 class Vgg16QueryNet(BaseAgent):
     def __init__(self):
         super(Vgg16QueryNet, self).__init__()
+        backends.cudnn.deterministic = True
+        backends.cudnn.benchmark = False
+        random.seed(SEED)
+        np.random.seed(SEED)
+        torch.manual_seed(SEED)
+        torch.cuda.manual_seed(SEED)
+        torch.cuda.manual_seed_all(SEED)
 
-        if torch.cuda.is_available():
-            self.device = torch.device("cuda")
-            torch.cuda.manual_seed(SEED)
-        else:
-            self.device = torch.device("cpu")
-            torch.manual_seed(SEED)
-
-        self.epochs = 300
-        self.ft_epochs = 10
-
-        self.model = models.vgg16_bn(pretrained=True)
-        self.optimaizer = optim.SGD(self.model.parameters(), lr=0.001, momentum=0.9, weight_decay=0.0005, nesterov=True)
+        self.model = models.vgg16_bn(pretrained=False)
+        self.optimaizer = optim.SGD(self.model.parameters(), lr=0.1, momentum=0.9, weight_decay=0.0005, nesterov=True)
+        self.scheduler = optim.lr_scheduler.MultiStepLR(self.optimaizer, milestones=[150, 225], gamma=0.1)
         self.criterion = nn.CrossEntropyLoss()
 
-        self.loader = ImageNetLoader(batch_size=16)
-
-        self.history = {"train_acc": [], "train_loss": [], "valid_acc": [], "valid_loss": []}
+        self.history = {"train_loss": [], "val_loss": [], "val_acc": []}
 
         self.named_modules_list, self.named_conv_list = dict(), dict()
         i = 0
-        for idx, m in enumerate(self.model.features):
-            if isinstance(m, torch.nn.Conv2d):
-                self.named_modules_list['{}.conv'.format(i)] = m
-                self.named_conv_list['{}.conv'.format(i)] = m
-            elif isinstance(m, torch.nn.BatchNorm2d):
-                self.named_modules_list['{}.bn'.format(i)] = m
-                i += 1
-        self.channel_importance = {v: dict() for k, v in self.loader.train_set.class_to_idx.items()}
+        # for idx, m in enumerate(self.model.features):
+        #     if isinstance(m, torch.nn.Conv2d):
+        #         self.named_modules_list['{}.conv'.format(i)] = m
+        #         self.named_conv_list['{}.conv'.format(i)] = m
+        #     elif isinstance(m, torch.nn.BatchNorm2d):
+        #         self.named_modules_list['{}.bn'.format(i)] = m
+        #         i += 1
+        # self.channel_importance = {v: dict() for k, v in self.loader.train_set.class_to_idx.items()}
 
     def save_channel_info(self, path="checkpoints/channel_info_vgg16.pkl"):
         if os.path.exists(path):
@@ -68,15 +62,16 @@ class Vgg16QueryNet(BaseAgent):
                 grads[idx] = grad
             return hook
 
-        def cal_importance(grads_list, outputs_list):
+        def cal_importance(query_k, grads_list, outputs_list):
             for n, m in self.named_modules_list.items():
                 if isinstance(m, torch.nn.Conv2d):
                     grad = grads_list[n]
                     output = outputs_list[n]
                     importance = (grad * output).mean(dim=(2, 3))
-                    total_importance = torch.abs(importance).sum(dim=0)
-                    self.channel_importance[n] += total_importance.data.cpu()
+                    total_importance = torch.abs(importance).squeeze()
+                    self.channel_importance[query_k][n] += total_importance.data.cpu()
 
+        self.model = self.model.to(self.device)
         for query_k, _ in self.channel_importance.items():
             for name, module in self.named_conv_list.items():
                 self.channel_importance[query_k][name] = torch.zeros(module.out_channels)
@@ -109,7 +104,8 @@ class Vgg16QueryNet(BaseAgent):
                 one_hot = torch.sum(one_hot.to(self.device) * x)
                 one_hot.backward(retain_graph=True)
 
-                cal_importance(grads, outputs)
+                cal_importance(query_k, grads, outputs)
+        self.save_channel_info()
 
     def query_process(self, k, method='gradient'):
         if method == "gradient":
@@ -126,17 +122,27 @@ class Vgg16QueryNet(BaseAgent):
                     indices_stayed = [i for i in range(len(channel_importance)) if channel_importance[i] > threshold]
                     module_surgery(m, bn, next_m, indices_stayed)
 
-    def train(self, epochs=None):
+    def train(self, epochs=100, checkpoint_name="checkpoint.pt"):
+        assert self.loader is not None, "please set Vgg16QueryNet.loader"
         self.model = self.model.to(self.device)
-        epochs = self.epochs if epochs is None else epochs
+        max_acc = 0.
         for epoch in range(epochs):
-            self._train_one_epoch(epoch)
-            self._validate(epoch)
-            self.scheduler.step()
+            self.last_epoch += 1
+            train_loss = self._train_one_epoch(epochs)
+            val_acc, loss = self._validate()
+            self.history["train_loss"].append(train_loss)
+            self.history["val_loss"].append(loss)
+            self.history["val_acc"].append(val_acc)
+            if val_acc > max_acc:
+                max_acc = val_acc
+                self.save_checkpoint(checkpoint_name=checkpoint_name)
+            if self.scheduler is not None:
+                self.scheduler.step()
 
-    def _train_one_epoch(self, epoch):
+    def _train_one_epoch(self, epochs):
         self.model.train()
         start = time.time()
+        n, correct, train_loss = 0, 0, 0.
         for i, (data, label) in enumerate(self.loader.train_loader):
             data, label = data.to(self.device), label.to(self.device)
             self.optimaizer.zero_grad()
@@ -144,11 +150,16 @@ class Vgg16QueryNet(BaseAgent):
             loss = self.criterion(output, label)
             loss.backward()
             self.optimaizer.step()
-            print(f"\rEpoch {epoch}/{self.epochs}\t{time.time() - start:.3f}\tTraining loss: {loss.item():.4f}", end='')
+            print(f"\rEpoch {self.last_epoch}/{epochs}\t({i+1}/{self.loader.train_iterations})\tElapsed time:{time.time() - start:.3f}\tTraining loss: {loss.item():.4f}", end='')
+            train_loss += loss.item()
+        train_loss = train_loss / self.loader.train_iterations
+        return train_loss
 
-    def _validate(self, epoch):
+    def _validate(self):
         self.model.eval()
+        self.model = self.model.to(self.device)
         n, correct, val_loss = 0, 0, 0.
+        start = time.time()
         with torch.no_grad():
             for i, (data, label) in enumerate(self.loader.valid_loader):
                 data, label = data.to(self.device), label.to(self.device)
@@ -159,4 +170,45 @@ class Vgg16QueryNet(BaseAgent):
                 val_loss += self.criterion(output, label)
 
         val_loss /= self.loader.valid_iterations
+        acc = correct / n
+        print(f"\tInference time: {time.time() - start}\tValidation loss: {val_loss:.4f} Acc: {acc:.4f} ({correct}/{n})")
+        return val_loss, acc
+
+    def sub_validate(self):
+        self.model.eval()
+        self.model = self.model.to(self.device)
+        n, correct, val_loss = 0., 0., 0.
+        selected_classes = [340, 386, 105, 30, 300, 985, 527, 673, 779, 526]
+
+        def scoring(pred, label):
+            correct = 0.
+            for t, y in zip(pred, label):
+                if t in selected_classes:
+                    if t == y:
+                        correct += 1
+                else:
+                    if t == y:
+                        correct += 1
+                    elif t not in selected_classes and y not in selected_classes:
+                        correct += 1
+
+            return correct
+
+        self.loader.make_subclass_set(selected_classes)
+        with torch.no_grad():
+            for i, (data, label) in enumerate(self.loader.sub_valid_loader):
+                data, label = data.to(self.device), label.to(self.device)
+                output = self.model(data)
+                pred = output.argmax(dim=1)
+                n += data.size(0)
+                # correct += pred.eq(label).sum().item()
+                correct += scoring(pred, label)
+                val_loss += self.criterion(output, label)
+
+        val_loss /= self.loader.valid_iterations
         print(f"\t\tValidation loss: {val_loss:.4f} Acc: {correct/n:.4f} ({correct}/{n})")
+
+
+if __name__=="__main__":
+    agent = Vgg16QueryNet()
+    agent.sub_validate()
