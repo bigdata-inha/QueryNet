@@ -1,6 +1,6 @@
 import os
 import torch
-
+import torch.nn as nn
 
 class BaseAgent:
     def __init__(self):
@@ -19,6 +19,20 @@ class BaseAgent:
         self.criterion = None
 
         self.history = {"train_loss": [], "valid_loss": [], "valid_acc": []}
+
+    def init_model_weights(self):
+        assert self.model is not None, "please set self.model"
+        for m in self.model.modules():
+            if isinstance(m, nn.Conv2d):
+                nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
+                if m.bias is not None:
+                    nn.init.constant_(m.bias, 0)
+            elif isinstance(m, nn.BatchNorm2d):
+                nn.init.constant_(m.weight, 1)
+                nn.init.constant_(m.bias, 0)
+            elif isinstance(m, nn.Linear):
+                nn.init.normal_(m.weight, 0, 0.01)
+                nn.init.constant_(m.bias, 0)
 
     def save_checkpoint(self, directory="./checkpoints", checkpoint_name="checkpoint.pt"):
         if not os.path.exists(directory):

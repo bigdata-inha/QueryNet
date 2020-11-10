@@ -6,6 +6,7 @@ import torch.nn as nn
 import torch.optim as optim
 import torchvision.models as models
 
+import graphs.models as cmodels
 from agents.base import BaseAgent
 from dataloaders import *
 from prune.channel import *
@@ -24,7 +25,8 @@ class Vgg16QueryNet(BaseAgent):
         torch.cuda.manual_seed(SEED)
         torch.cuda.manual_seed_all(SEED)
 
-        self.model = models.vgg16_bn(pretrained=False)
+        # self.model = models.vgg16_bn(pretrained=False)
+        self.model = cmodels.vgg16_bn_cifar100()
         self.optimaizer = optim.SGD(self.model.parameters(), lr=0.1, momentum=0.9, weight_decay=0.0005, nesterov=True)
         self.scheduler = optim.lr_scheduler.MultiStepLR(self.optimaizer, milestones=[150, 225], gamma=0.1)
         self.criterion = nn.CrossEntropyLoss()
@@ -129,12 +131,12 @@ class Vgg16QueryNet(BaseAgent):
         for epoch in range(epochs):
             self.last_epoch += 1
             train_loss = self._train_one_epoch(epochs)
-            val_acc, loss = self._validate()
+            val_loss, acc = self._validate()
             self.history["train_loss"].append(train_loss)
-            self.history["val_loss"].append(loss)
-            self.history["val_acc"].append(val_acc)
-            if val_acc > max_acc:
-                max_acc = val_acc
+            self.history["val_loss"].append(val_loss)
+            self.history["val_acc"].append(acc)
+            if acc > max_acc:
+                max_acc = acc
                 self.save_checkpoint(checkpoint_name=checkpoint_name)
             if self.scheduler is not None:
                 self.scheduler.step()
