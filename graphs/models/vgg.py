@@ -10,10 +10,10 @@ cfg = {
 
 
 class VGG(nn.Module):
-    def __init__(self, vgg_name, num_classes=10, init_weights=True):
+    def __init__(self, vgg_name, num_classes=1000, use_large_top=True, init_weights=True):
         super(VGG, self).__init__()
         self.features = self._make_layers(cfg[vgg_name])
-        if num_classes > 100:
+        if use_large_top:
             self.avgpool = nn.AdaptiveAvgPool2d((7, 7))
             self.classifier = nn.Sequential(
                 nn.Linear(512 * 7 * 7, 4096),
@@ -65,10 +65,3 @@ class VGG(nn.Module):
         layers += [nn.AvgPool2d(kernel_size=1, stride=1)]
         return nn.Sequential(*layers)
 
-
-def vgg16_bn_cifar10():
-    return VGG('VGG16', num_classes=10)
-
-
-def vgg16_bn_cifar100():
-    return VGG('VGG16', num_classes=100)
