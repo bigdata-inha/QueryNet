@@ -8,7 +8,6 @@ import torch.optim as optim
 from agents.base import BaseAgent
 from dataloaders import *
 from graphs.factory import ModelFactory
-from prune.channel11 import *
 
 SEED = 42
 
@@ -24,6 +23,7 @@ class Vgg16QueryNet(BaseAgent):
         torch.cuda.manual_seed(SEED)
         torch.cuda.manual_seed_all(SEED)
         self.model = ModelFactory.get_model("CIFAR10", "VGG16")
+        self.loader = Cifar10Loader(batch_size=128)
         self.optimaizer = optim.SGD(self.model.parameters(), lr=0.1, momentum=0.9, weight_decay=0.0005, nesterov=True)
         self.scheduler = optim.lr_scheduler.MultiStepLR(self.optimaizer, milestones=[150, 225], gamma=0.1)
         self.criterion = nn.CrossEntropyLoss()
@@ -31,13 +31,12 @@ class Vgg16QueryNet(BaseAgent):
         self.history = {"train_loss": [], "val_loss": [], "val_acc": []}
 
         self.named_paramed_modules = dict()
-        i = 0
-        for idx, m in enumerate(self.model.features):
-            if isinstance(m, torch.nn.Conv2d):
-                self.named_paramed_modules['{}.conv'.format(i)] = m
-            elif isinstance(m, torch.nn.BatchNorm2d):
-                self.named_paramed_modules['{}.bn'.format(i)] = m
-                i += 1
+        for name, module in self.model.features.named_modules(prefix=''):
+            if isinstance(module, torch.nn.Conv2d):
+                self.named_paramed_modules[name] = module
+            elif isinstance(module, torch.nn.BatchNorm2d):
+                self.named_paramed_modules[name] = module
+
         self.channel_importance = {v: dict() for k, v in self.loader.train_set.class_to_idx.items()}
 
     def save_channel_info(self, path="checkpoints/channel_info_vgg16_cifar10.pkl"):
@@ -54,8 +53,21 @@ class Vgg16QueryNet(BaseAgent):
             print("file is not exist")
 
     def preprocess(self):
-        def save_grad(grad):
-            pass
+        outputs, grads = dict(), dict()
+
+        def save_grad(module_name):
+            def hook(grad):
+                grads[module_name] = grad
+            return hook
+
+        for query in len(self.channel_importance):
+            self.loader.set_subclass_loader()
+
+
+
+
+
+
 
     # def preprocess(self):
     #     """ preprocess for all classes 0 ~ 999 in imagenet """
@@ -122,7 +134,6 @@ class Vgg16QueryNet(BaseAgent):
                     channel_importance = channel_importance / channel_importance.sum()
                     threshold = k / channel_importance.size(0)
                     indices_stayed = [i for i in range(len(channel_importance)) if channel_importance[i] > threshold]
-                    module_surgery(m, bn, next_m, indices_stayed)
 
     def train(self, epochs=100, checkpoint_name="checkpoint.pt"):
         assert self.loader is not None, "please set Vgg16QueryNet.loader"
