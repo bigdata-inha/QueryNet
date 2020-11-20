@@ -61,7 +61,7 @@ class Vgg16QueryNet(BaseAgent):
             return hook
 
         for query in len(self.channel_importance):
-            self.loader.set_subclass_loader()
+            self.loader
 
 
 
