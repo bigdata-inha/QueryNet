@@ -50,22 +50,22 @@ class Cifar10Loader(BaseLoader):
         :param use_dustbin_class: bool, whether using dustbin class or not
         :param relabeling: bool, whether changing label to new label,
         if True, label of subclasses are re-labeled from 0,
-        if use_dustbin_class is True, then the dustbin is labeled to the last number (e.g. len(subclasses))
+        if using dustbin, the dustbin class is labeled to the last number (e.g. len(subclasses))
         :return: None
         """
-        assert isinstance(sub_classes, Iterable), "sub_classes must to be iterable e.g. [1] or [3,5,8]"
+        assert isinstance(sub_classes, Iterable), "sub_classes must to be iterable"
         self.batch_size = self.batch_size if batch_size is None else batch_size
-        sub_classes = sorted(sub_classes)
         num_subclasses, num_dustbin = len(sub_classes), (len(self.train_set.classes) - len(sub_classes))
+        sub_classes = sorted(sub_classes)   # 입력된 class list를 순서대로 정리 e.g. [5,2,1] -> [1,2,5]
 
         # selecting train set samples
         dic_train_class_cnt = Counter(self.train_set.targets)  # class당 데이터 갯수
-        n_sample_sub_classes, n_sample_dustbin = 0, 0    # sub class 총 데이터 갯수 & dustbin class 총 데이터 갯수
+        total_samples_sub_classes, total_sample_dustbin = 0, 0    # sub class 총 데이터 갯수 & dustbin class 총 데이터 갯수
         for i in range(len(self.train_set.classes)):
             if i in sub_classes:
-                n_sample_sub_classes += dic_train_class_cnt[i]
+                total_samples_sub_classes += dic_train_class_cnt[i]
             else:
-                n_sample_dustbin += dic_train_class_cnt[i]
+                total_sample_dustbin += dic_train_class_cnt[i]
         train_new_samples, train_new_targets = [], []
         idx = 0
         while idx < len(self.train_set.targets):
@@ -75,36 +75,40 @@ class Cifar10Loader(BaseLoader):
                 train_new_samples.extend(self.train_set.data[idx:idx + n_samples_per_class])
                 train_new_targets.extend(self.train_set.targets[idx:idx + n_samples_per_class])
             else:   # dustbin class당 데이터 갯수: 전체 subclass 데이터의 수를 dustbin 클래스의 수로 나눠줌
-                n_samples_per_class = (n_sample_sub_classes // num_dustbin)
+                n_samples_per_class = (total_samples_sub_classes // total_sample_dustbin)
+                if n_samples_per_class == 0:
+                    n_samples_per_class = 1
                 train_new_samples.extend(self.train_set.data[idx:idx + n_samples_per_class])
                 train_new_targets.extend(self.train_set.targets[idx:idx + n_samples_per_class])
             idx += dic_train_class_cnt[target]
 
         # selecting valid set samples
         dic_valid_class_cnt = Counter(self.valid_set.targets)
-        n_sample_sub_classes, n_sample_dustbin = 0, 0    # sub class 총 데이터 갯수 & dustbin class 총 데이터 갯수
+        total_samples_sub_classes, total_sample_dustbin = 0, 0    # sub class 총 데이터 갯수 & dustbin class 총 데이터 갯수
         for i in range(len(self.train_set.classes)):
             if i in sub_classes:
-                n_sample_sub_classes += dic_valid_class_cnt[i]
+                total_samples_sub_classes += dic_valid_class_cnt[i]
             else:
-                n_sample_dustbin += dic_valid_class_cnt[i]
+                total_sample_dustbin += dic_valid_class_cnt[i]
         valid_new_samples, valid_new_targets = [], []
         idx = 0
         while idx < len(self.valid_set.targets):
             target = self.valid_set.targets[idx]
             if target in sub_classes:
                 n_samples_per_class = dic_valid_class_cnt[target]
-                valid_new_samples.extend(self.valid_set.samples[idx:idx + n_samples_per_class])
+                valid_new_samples.extend(self.valid_set.data[idx:idx + n_samples_per_class])
                 valid_new_targets.extend(self.valid_set.targets[idx:idx + n_samples_per_class])
             else:
-                n_samples_per_class = (n_sample_sub_classes // num_dustbin)
-                valid_new_samples.extend(self.valid_set.samples[idx:idx + n_samples_per_class])
+                n_samples_per_class = (total_samples_sub_classes // total_sample_dustbin)
+                if n_samples_per_class == 0:
+                    n_samples_per_class = 1
+                valid_new_samples.extend(self.valid_set.data[idx:idx + n_samples_per_class])
                 valid_new_targets.extend(self.valid_set.targets[idx:idx + n_samples_per_class])
             idx += dic_valid_class_cnt[target]
 
         idx_to_new_idx = {c: i for i, c in enumerate(sub_classes)}  # mapping to new target idx / dustbin: the last num
 
-        #re-labeing
+        # re-labeling
         if relabeling is True:
             # re-labeling train set
             for i, (sample, target) in enumerate(zip(train_new_samples, train_new_targets)):
@@ -113,7 +117,7 @@ class Cifar10Loader(BaseLoader):
                     train_new_samples[i] = (sample[0], new_label)
                     train_new_targets[i] = new_label
                 else:
-                    new_label = len(sub_classes)
+                    new_label = len(sub_classes)    # last label
                     train_new_samples[i] = (sample[0], new_label)
                     train_new_targets[i] = new_label
 
@@ -124,36 +128,16 @@ class Cifar10Loader(BaseLoader):
                     valid_new_samples[i] = (sample[0], new_label)
                     valid_new_targets[i] = new_label
                 else:
-                    new_label = len(sub_classes)
+                    new_label = len(sub_classes)    # last label
                     valid_new_samples[i] = (sample[0], new_label)
                     valid_new_targets[i] = new_label
 
+        self.train_set.data = train_new_samples
+        self.train_set.targets = train_new_targets
 
-    def set_subclass_loader(self, sub_classes, batch_size=None):
-        """make loader having subclass"""
-        assert isinstance(sub_classes, Iterable), "sub_classes must to be iterable e.g. [1] or [3,5,8]"
-        self.batch_size = self.batch_size if batch_size is None else batch_size
-
-        sub_idx = []
-        for idx, classes in enumerate(self.train_set.targets):
-            if classes in sub_classes:
-                sub_idx.append(idx)
-
-        self.train_set = copy.deepcopy(self._original_train_set)
-        self.train_set.data = self.train_set.data[sub_idx]
-        self.train_set.targets = [self.train_set.targets[i] for i in sub_idx]
-
-        sub_idx = []
-        for idx, classes in enumerate(self.valid_set.targets):
-            if classes in sub_classes:
-                sub_idx.append(idx)
-
-        self.valid_set = copy.deepcopy(self._original_valid_set)
-        self.valid_set.data = self.valid_set.data[sub_idx]
-        self.valid_set.targets = [self.valid_set.targets[i] for i in sub_idx]
+        self.valid_set.data = valid_new_samples
+        self.valid_set.targets = valid_new_targets
 
         self.train_loader = torch.utils.data.DataLoader(self.train_set, batch_size=self.batch_size, shuffle=True)
         self.valid_loader = torch.utils.data.DataLoader(self.valid_set, batch_size=self.batch_size, shuffle=False)
 
-        self.train_iterations = len(self.train_loader)
-        self.valid_iterations = len(self.valid_loader)
