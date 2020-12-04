@@ -1,3 +1,3 @@
 # QueryNet
-QueryNet: Fast Queriable and Mergeable Convolutional Neural Networks (2021)
+QueryNet: Fast Queriable Convolutional Neural Networks (2021)
 
